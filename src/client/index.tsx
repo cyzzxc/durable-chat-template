@@ -1,6 +1,6 @@
 import { createRoot } from "react-dom/client";
 import { usePartySocket } from "partysocket/react";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   BrowserRouter,
   Routes,
@@ -47,11 +47,81 @@ function getStoredName(): string {
   return randomName;
 }
 
+// 确认弹窗组件
+function ConfirmModal({
+  isOpen,
+  title,
+  message,
+  confirmText = "确认",
+  cancelText = "取消",
+  onConfirm,
+  onCancel,
+}: {
+  isOpen: boolean;
+  title: string;
+  message: string;
+  confirmText?: string;
+  cancelText?: string;
+  onConfirm: () => void;
+  onCancel: () => void;
+}) {
+  const handleKeyDown = useCallback(
+    (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        onCancel();
+      } else if (e.key === "Enter") {
+        onConfirm();
+      }
+    },
+    [onConfirm, onCancel]
+  );
+
+  useEffect(() => {
+    if (isOpen) {
+      document.addEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = "hidden";
+    }
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = "";
+    };
+  }, [isOpen, handleKeyDown]);
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="modal-overlay" onClick={onCancel}>
+      <div className="modal-container" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
+        </div>
+        <div className="modal-content">
+          <h3 className="modal-title">{title}</h3>
+          <p className="modal-message">{message}</p>
+        </div>
+        <div className="modal-actions">
+          <button type="button" className="modal-btn cancel" onClick={onCancel}>
+            {cancelText}
+          </button>
+          <button type="button" className="modal-btn confirm" onClick={onConfirm}>
+            {confirmText}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function App() {
   const [name, setName] = useState<string>("");
   const [isEditingName, setIsEditingName] = useState(false);
   const [nameInput, setNameInput] = useState("");
   const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [showClearConfirm, setShowClearConfirm] = useState(false);
   const { room } = useParams();
 
   useEffect(() => {
@@ -105,6 +175,10 @@ function App() {
               : m,
           ),
         );
+      } else if (message.type === "delete") {
+        setMessages((messages) => messages.filter((m) => m.id !== message.id));
+      } else if (message.type === "clear") {
+        setMessages([]);
       } else {
         setMessages(message.messages);
       }
@@ -132,6 +206,17 @@ function App() {
         <div className="room-info">
           <span className="room-label">聊天室</span>
           <span className="room-id" title={room}>{room}</span>
+          <button
+            type="button"
+            className="clear-btn"
+            onClick={() => setShowClearConfirm(true)}
+            title="清空聊天记录"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="3 6 5 6 21 6"></polyline>
+              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+            </svg>
+          </button>
         </div>
         <div className="user-info">
           <span className="user-label">当前用户</span>
@@ -199,7 +284,23 @@ function App() {
               key={message.id}
               className={`message ${isMyMessage ? "my-message" : "other-message"}`}
             >
-              <span className="message-user">{message.user}</span>
+              <div className="message-header">
+                <span className="message-user">{message.user}</span>
+                <button
+                  type="button"
+                  className="message-delete-btn"
+                  onClick={() => {
+                    socket.send(JSON.stringify({ type: "delete", id: message.id } as Message));
+                    setMessages((msgs) => msgs.filter((m) => m.id !== message.id));
+                  }}
+                  title="删除消息"
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="3 6 5 6 21 6"></polyline>
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                  </svg>
+                </button>
+              </div>
               <div className="message-content">{parseLinks(message.content)}</div>
             </div>
           );
@@ -249,6 +350,20 @@ function App() {
           </svg>
         </button>
       </form>
+
+      <ConfirmModal
+        isOpen={showClearConfirm}
+        title="清空聊天记录"
+        message="确定要清空当前聊天室的所有消息吗？此操作无法撤销。"
+        confirmText="清空"
+        cancelText="取消"
+        onConfirm={() => {
+          socket.send(JSON.stringify({ type: "clear" } as Message));
+          setMessages([]);
+          setShowClearConfirm(false);
+        }}
+        onCancel={() => setShowClearConfirm(false)}
+      />
     </div>
   );
 }

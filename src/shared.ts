@@ -21,8 +21,15 @@ export type Message =
 			role: "user" | "assistant";
 	  }
 	| {
+			type: "delete";
+			id: string;
+	  }
+	| {
 			type: "all";
 			messages: ChatMessage[];
+	  }
+	| {
+			type: "clear";
 	  };
 
 export const names = [

@@ -133,6 +133,33 @@ body {
   font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Code', monospace;
 }
 
+.clear-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  background: transparent;
+  border: 1.5px solid var(--border-color);
+  border-radius: 6px;
+  cursor: pointer;
+  color: var(--text-muted);
+  transition: var(--transition);
+  flex-shrink: 0;
+  margin-left: 0.25rem;
+}
+
+.clear-btn:hover {
+  background: #fee2e2;
+  border-color: #fca5a5;
+  color: #dc2626;
+}
+
+.clear-btn:active {
+  transform: scale(0.95);
+}
+
 .user-info {
   display: flex;
   align-items: center;
@@ -176,12 +203,10 @@ body {
   display: flex;
   align-items: center;
   gap: 0.375rem;
-  flex: 1;
 }
 
 .name-edit-input {
-  flex: 1;
-  max-width: 160px;
+  width: 100px;
   padding: 0.5rem 0.875rem;
   font-size: 0.875rem;
   font-weight: 500;
@@ -283,18 +308,57 @@ body {
 .message-user {
   font-size: 0.75rem;
   font-weight: 600;
-  margin-bottom: 0.25rem;
   padding: 0 0.5rem;
+}
+
+.message-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.25rem;
+  padding: 0 0.25rem;
+}
+
+.my-message .message-header {
+  flex-direction: row-reverse;
+}
+
+.message-delete-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  color: var(--text-muted);
+  opacity: 0;
+  transition: var(--transition);
+  flex-shrink: 0;
+}
+
+.message:hover .message-delete-btn {
+  opacity: 1;
+}
+
+.message-delete-btn:hover {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.message-delete-btn:active {
+  transform: scale(0.9);
 }
 
 .my-message .message-user {
   color: var(--primary-color);
-  text-align: right;
 }
 
 .other-message .message-user {
   color: var(--secondary-color);
-  text-align: left;
 }
 
 .message-content {
@@ -436,7 +500,7 @@ body {
   }
 
   .name-edit-input {
-    max-width: 100px;
+    width: 80px;
     font-size: 0.8125rem;
   }
 
@@ -505,4 +569,125 @@ body {
 /* Remove button (hidden by default, shown on hover) */
 .message .remove {
   display: none;
+}
+
+/* Confirm Modal Styles */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeInOverlay 0.2s ease;
+}
+
+@keyframes fadeInOverlay {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.modal-container {
+  background: var(--surface-color);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  max-width: 400px;
+  width: 90%;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  animation: slideInModal 0.25s ease;
+}
+
+@keyframes slideInModal {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.modal-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  margin: 0 auto 1rem;
+  background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+  border-radius: 50%;
+  color: #dc2626;
+}
+
+.modal-content {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.modal-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+}
+
+.modal-message {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+}
+
+.modal-btn {
+  flex: 1;
+  max-width: 140px;
+  padding: 0.625rem 1.25rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  font-family: inherit;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: var(--transition);
+  border: none;
+}
+
+.modal-btn.cancel {
+  background: var(--bg-color);
+  color: var(--text-secondary);
+  border: 1.5px solid var(--border-color);
+}
+
+.modal-btn.cancel:hover {
+  background: var(--border-color);
+  color: var(--text-primary);
+}
+
+.modal-btn.confirm {
+  background: #dc2626;
+  color: white;
+}
+
+.modal-btn.confirm:hover {
+  background: #b91c1c;
+}
+
+.modal-btn:active {
+  transform: scale(0.98);
+}
+
+.modal-btn:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
 }

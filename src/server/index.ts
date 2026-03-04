@@ -65,6 +65,11 @@ export class Chat extends Server<Env> {
 		);
 	}
 
+	deleteMessage(id: string) {
+		this.messages = this.messages.filter((m) => m.id !== id);
+		this.ctx.storage.sql.exec(`DELETE FROM messages WHERE id = '${id}'`);
+	}
+
 	onMessage(connection: Connection, message: WSMessage) {
 		// let's broadcast the raw message to everyone else
 		this.broadcast(message);
@@ -73,7 +78,16 @@ export class Chat extends Server<Env> {
 		const parsed = JSON.parse(message as string) as Message;
 		if (parsed.type === "add" || parsed.type === "update") {
 			this.saveMessage(parsed);
+		} else if (parsed.type === "delete") {
+			this.deleteMessage(parsed.id);
+		} else if (parsed.type === "clear") {
+			this.clearMessages();
 		}
+	}
+
+	clearMessages() {
+		this.messages = [];
+		this.ctx.storage.sql.exec(`DELETE FROM messages`);
 	}
 }
 
