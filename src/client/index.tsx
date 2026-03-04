@@ -288,6 +288,19 @@ function App() {
                 <span className="message-user">{message.user}</span>
                 <button
                   type="button"
+                  className="message-copy-btn"
+                  onClick={() => {
+                    navigator.clipboard.writeText(message.content);
+                  }}
+                  title="复制消息"
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                  </svg>
+                </button>
+                <button
+                  type="button"
                   className="message-delete-btn"
                   onClick={() => {
                     socket.send(JSON.stringify({ type: "delete", id: message.id } as Message));
