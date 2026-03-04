@@ -1,48 +1,33 @@
 <!doctype html>
-<html lang="en">
-	<head>
-		<!-- Basic Page Needs
-  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
-		<meta charset="utf-8" />
-		<title>Chat!</title>
-		<meta name="description" content="" />
-		<meta name="author" content="" />
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <title>聊天室</title>
+    <meta name="description" content="由 Durable Objects 驱动的实时聊天" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+    <meta name="theme-color" content="#667eea" />
 
-		<!-- Mobile Specific Metas
-  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
-		<meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- Modern system fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-		<!-- FONT
-  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
-
-		<!-- CSS
-  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
-		<link rel="stylesheet" href="css/normalize.css" />
-		<link rel="stylesheet" href="css/skeleton.css" />
-		<link rel="stylesheet" href="styles.css" />
-
-		<!-- Favicon
-  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
-		<link rel="icon" type="image/ico" href="favicon.ico" />
-		<script src="/dist/index.js" type="module"></script>
-	</head>
-	<body>
-		<!-- Primary Page Layout
-  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
-		<div class="container" style="width: 95%; height: 100%">
-			<div class="row" style="height: 100%">
-				<div class="one-third column" style="margin-top: 25%">
-					<h4><b>Chat</b>, powered by Durable Objects</h4>
-					<p>
-						This chat room is hosted in a single Durable Object, running in one
-						process in one machine in one location, very close to the users.
-					</p>
-				</div>
-				<div class="two-thirds column" id="root"></div>
-			</div>
-		</div>
-
-		<!-- End Document
-  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
-	</body>
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="icon" type="image/ico" href="favicon.ico" />
+    <script src="/dist/index.js" type="module"></script>
+  </head>
+  <body>
+    <div class="app-container">
+      <aside class="sidebar">
+        <div class="sidebar-content">
+          <h1 class="sidebar-title">聊天室</h1>
+          <p class="sidebar-subtitle">私人聊天室</p>
+          <p class="sidebar-description">
+            由 Cloudflare Edge 与 Durable Objects 驱动的实时聊天，全球低延迟，数据私密安全。
+          </p>
+        </div>
+      </aside>
+      <main class="chat-area" id="root"></main>
+    </div>
+  </body>
 </html>
