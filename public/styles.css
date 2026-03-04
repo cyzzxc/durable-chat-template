@@ -305,6 +305,7 @@ body {
 
 .message.my-message {
   align-self: flex-end;
+  align-items: flex-end;
 }
 
 .message.other-message {
