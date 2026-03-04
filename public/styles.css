@@ -17,10 +17,7 @@
   --radius-md: 12px;
   --radius-lg: 16px;
   --radius-full: 9999px;
-  --transition-fast: opacity 0.15s ease, background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease, transform 0.15s ease;
-  --transition: opacity 0.2s ease, background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
-  --z-modal: 1000;
-  --z-tooltip: 1050;
+  --transition: all 0.2s ease;
 }
 
 /* Reset & Base */
@@ -50,7 +47,6 @@ body {
 .app-container {
   display: flex;
   height: 100vh;
-  height: 100dvh;
   width: 100%;
 }
 
@@ -216,8 +212,7 @@ body {
 
 .name-edit-input {
   width: 100px;
-  padding: 0.15rem 0.6rem;
-  height: 28px;
+  padding: 0.5rem 0.875rem;
   font-size: 0.875rem;
   font-weight: 500;
   font-family: inherit;
@@ -238,8 +233,8 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
   border: none;
   cursor: pointer;
@@ -310,11 +305,11 @@ body {
 
 .message.my-message {
   align-self: flex-end;
-  align-items: flex-end;
 }
 
 .message.other-message {
   align-self: flex-start;
+  align-items: flex-start;
 }
 
 .message-user {
@@ -335,8 +330,59 @@ body {
   flex-direction: row-reverse;
 }
 
-/* Message action buttons (copy & delete) */
-.message-copy-btn,
+.message-copy-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 0;
+  height: 22px;
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  color: var(--text-muted);
+  opacity: 0;
+  transition: var(--transition);
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.message:hover .message-copy-btn {
+  opacity: 1;
+  width: 22px;
+}
+
+.message-copy-btn:hover {
+  background: #e0e7ff;
+  color: var(--primary-color);
+}
+
+.message-copy-btn.copied {
+  background: #dcfce7;
+  color: #16a34a;
+}
+
+@keyframes copySuccess {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.message-copy-btn.copied {
+  animation: copySuccess 0.3s ease;
+}
+
+.message-copy-btn:active {
+  transform: scale(0.9);
+}
+
 .message-delete-btn {
   display: flex;
   align-items: center;
@@ -355,15 +401,9 @@ body {
   overflow: hidden;
 }
 
-.message:hover .message-copy-btn,
 .message:hover .message-delete-btn {
   opacity: 1;
   width: 22px;
-}
-
-.message-copy-btn:hover {
-  background: #e0e7ff;
-  color: var(--primary-color);
 }
 
 .message-delete-btn:hover {
@@ -371,7 +411,6 @@ body {
   color: #dc2626;
 }
 
-.message-copy-btn:active,
 .message-delete-btn:active {
   transform: scale(0.9);
 }
@@ -393,13 +432,30 @@ body {
   word-break: break-word;
   position: relative;
   min-width: 0;
+}
+
+
+.my-message .message-content {
   background: var(--surface-color);
   color: var(--text-primary);
   border: 1px solid var(--border-color);
 }
 
-.message-content a {
+.my-message .message-content a {
   color: var(--primary-color);
+}
+
+.other-message .message-content {
+  background: var(--surface-color);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+}
+
+.other-message .message-content a {
+  color: var(--primary-color);
+}
+
+.message-content a {
   text-decoration: underline;
   text-underline-offset: 2px;
 }
@@ -474,18 +530,6 @@ body {
 
 .send-button:active {
   transform: translateY(0);
-}
-
-/* Focus visible for accessibility */
-.clear-btn:focus-visible,
-.send-button:focus-visible,
-.message-copy-btn:focus-visible,
-.message-delete-btn:focus-visible,
-.user-name-display:focus-visible,
-.name-edit-btn:focus-visible,
-.modal-btn:focus-visible {
-  outline: 2px solid var(--primary-color);
-  outline-offset: 2px;
 }
 
 /* Mobile Responsive */
@@ -605,7 +649,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: var(--z-modal);
+  z-index: 1000;
   animation: fadeInOverlay 0.2s ease;
 }
 
@@ -710,4 +754,9 @@ body {
 
 .modal-btn:active {
   transform: scale(0.98);
+}
+
+.modal-btn:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
 }
