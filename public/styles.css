@@ -287,6 +287,7 @@ body {
 .message {
   display: flex;
   flex-direction: column;
+  width: fit-content;
   max-width: 75%;
   animation: fadeIn 0.2s ease;
 }
@@ -332,7 +333,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 22px;
+  width: 0;
   height: 22px;
   padding: 0;
   background: transparent;
@@ -343,10 +344,12 @@ body {
   opacity: 0;
   transition: var(--transition);
   flex-shrink: 0;
+  overflow: hidden;
 }
 
 .message:hover .message-delete-btn {
   opacity: 1;
+  width: 22px;
 }
 
 .message-delete-btn:hover {
@@ -372,7 +375,9 @@ body {
   font-size: 0.9rem;
   line-height: 1.4;
   word-wrap: break-word;
+  word-break: break-word;
   position: relative;
+  min-width: 0;
 }
 
 .my-message .message-content {
