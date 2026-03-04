@@ -148,6 +148,11 @@ body {
   transition: var(--transition);
   flex-shrink: 0;
   margin-left: 0.25rem;
+  opacity: 0;
+}
+
+.room-info:hover .clear-btn {
+  opacity: 1;
 }
 
 .clear-btn:hover {
