@@ -89,6 +89,62 @@ export class Chat extends Server<Env> {
 		this.messages = [];
 		this.ctx.storage.sql.exec(`DELETE FROM messages`);
 	}
+
+	async onRequest(request: Request) {
+		const url = new URL(request.url);
+
+		// Only handle /messages endpoint
+		if (!url.pathname.endsWith("/messages")) {
+			return new Response("Not Found", { status: 404 });
+		}
+
+		// GET /messages - 获取所有消息
+		if (request.method === "GET") {
+			return new Response(JSON.stringify(this.messages), {
+				status: 200,
+				headers: { "Content-Type": "application/json" },
+			});
+		}
+
+		// POST /messages - 发送新消息
+		if (request.method === "POST") {
+			try {
+				const payload = (await request.json()) as Omit<
+					ChatMessage,
+					"id"
+				>;
+
+				// Generate a unique ID for the message
+				const id = crypto.randomUUID();
+				const message: ChatMessage = {
+					id,
+					...payload,
+				};
+
+				// Save and broadcast the message
+				this.saveMessage(message);
+				this.broadcastMessage({
+					type: "add",
+					...message,
+				});
+
+				return new Response(JSON.stringify(message), {
+					status: 201,
+					headers: { "Content-Type": "application/json" },
+				});
+			} catch (error) {
+				return new Response(
+					JSON.stringify({ error: "Invalid request body" }),
+					{
+						status: 400,
+						headers: { "Content-Type": "application/json" },
+					},
+				);
+			}
+		}
+
+		return new Response("Method Not Allowed", { status: 405 });
+	}
 }
 
 export default {
