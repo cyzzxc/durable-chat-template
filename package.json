@@ -18,7 +18,9 @@
 		"partysocket": "1.1.6",
 		"react": "^18.0.0",
 		"react-dom": "^18.0.0",
-		"react-router": "7.9.6"
+		"react-markdown": "^10.1.0",
+		"react-router": "7.9.6",
+		"remark-gfm": "^4.0.1"
 	},
 	"devDependencies": {
 		"@types/react": "^18.0.0",

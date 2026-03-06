@@ -11,33 +11,9 @@ import {
 import { nanoid } from "nanoid";
 
 import { names, type ChatMessage, type Message } from "../shared";
+import { MessageContent } from "./MessageContent";
 
 const STORAGE_KEY = "chat-username";
-
-// URL正则表达式
-const URL_REGEX = /(https?:\/\/[^\s<]+[^<.,:;"')\]\s])/g;
-
-// 解析文本中的URL并转换为链接
-function parseLinks(text: string): React.ReactNode {
-  const parts = text.split(URL_REGEX);
-  const matches = text.match(URL_REGEX) || [];
-
-  return parts.map((part, index) => {
-    if (matches[index - 1]) {
-      return (
-        <a
-          key={index}
-          href={matches[index - 1]}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          {matches[index - 1]}
-        </a>
-      );
-    }
-    return part;
-  });
-}
 
 function getStoredName(): string {
   const stored = localStorage.getItem(STORAGE_KEY);
@@ -336,7 +312,9 @@ function App() {
                   </svg>
                 </button>
               </div>
-              <div className="message-content">{parseLinks(message.content)}</div>
+              <div className="message-content">
+                <MessageContent content={message.content} />
+              </div>
             </div>
           );
         })}
