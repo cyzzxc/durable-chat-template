@@ -123,6 +123,7 @@ function App() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [showClearConfirm, setShowClearConfirm] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [isConnected, setIsConnected] = useState(false);
   const { room } = useParams();
 
   useEffect(() => {
@@ -132,6 +133,12 @@ function App() {
   const socket = usePartySocket({
     party: "chat",
     room,
+    onOpen: () => {
+      setIsConnected(true);
+    },
+    onClose: () => {
+      setIsConnected(false);
+    },
     onMessage: (evt) => {
       const message = JSON.parse(evt.data as string) as Message;
       if (message.type === "add") {
@@ -207,6 +214,12 @@ function App() {
         <div className="room-info">
           <span className="room-label">聊天室</span>
           <span className="room-id" title={room}>{room}</span>
+          <div
+            className={`connection-status ${isConnected ? "connected" : "disconnected"}`}
+            title={isConnected ? "已连接" : "未连接"}
+          >
+            <span className="status-dot"></span>
+          </div>
           <button
             type="button"
             className="clear-btn"
