@@ -40,6 +40,11 @@ export class Chat extends Server<Env> {
 		);
 	}
 
+	// 转义 SQL 字符串中的特殊字符（单引号）
+	escapeSqlString(str: string): string {
+		return str.replace(/'/g, "''");
+	}
+
 	saveMessage(message: ChatMessage) {
 		// check if the message already exists
 		const existingMessage = this.messages.find((m) => m.id === message.id);
@@ -54,14 +59,13 @@ export class Chat extends Server<Env> {
 			this.messages.push(message);
 		}
 
+		const escapedContent = this.escapeSqlString(message.content);
+		const escapedUser = this.escapeSqlString(message.user);
+
 		this.ctx.storage.sql.exec(
 			`INSERT INTO messages (id, user, role, content) VALUES ('${
 				message.id
-			}', '${message.user}', '${message.role}', ${JSON.stringify(
-				message.content,
-			)}) ON CONFLICT (id) DO UPDATE SET content = ${JSON.stringify(
-				message.content,
-			)}`,
+			}', '${escapedUser}', '${message.role}', '${escapedContent}') ON CONFLICT (id) DO UPDATE SET content = '${escapedContent}'`,
 		);
 	}
 
