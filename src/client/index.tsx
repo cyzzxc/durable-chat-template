@@ -328,10 +328,12 @@ function App() {
           if (!name) return;
           const content = e.currentTarget.elements.namedItem(
             "content",
-          ) as HTMLInputElement;
+          ) as HTMLTextAreaElement;
+          const text = content.value.trim();
+          if (!text) return;
           const chatMessage: ChatMessage = {
             id: nanoid(8),
-            content: content.value,
+            content: text,
             user: name,
             role: "user",
           };
@@ -345,15 +347,29 @@ function App() {
           );
 
           content.value = "";
+          // 重置高度
+          content.style.height = "auto";
         }}
       >
         <div className="input-wrapper">
-          <input
-            type="text"
+          <textarea
             name="content"
             className="message-input"
-            placeholder="输入消息..."
+            placeholder="输入消息... (Shift+Enter 换行)"
             autoComplete="off"
+            rows={1}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                e.currentTarget.form?.requestSubmit();
+              }
+            }}
+            onInput={(e) => {
+              // 自动调整高度
+              const textarea = e.currentTarget;
+              textarea.style.height = "auto";
+              textarea.style.height = Math.min(textarea.scrollHeight, 150) + "px";
+            }}
           />
         </div>
         <button type="submit" className="send-button">

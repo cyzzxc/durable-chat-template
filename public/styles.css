@@ -469,6 +469,7 @@ body {
   word-break: break-word;
   position: relative;
   min-width: 0;
+  white-space: pre-wrap;
 }
 
 
@@ -526,10 +527,15 @@ body {
   font-size: 1rem;
   font-family: inherit;
   border: 2px solid var(--border-color);
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-lg);
   outline: none;
   transition: var(--transition);
   background: var(--bg-color);
+  resize: none;
+  min-height: 48px;
+  max-height: 150px;
+  line-height: 1.5;
+  overflow-y: auto;
 }
 
 .message-input:focus {
@@ -628,6 +634,7 @@ body {
   .message-input {
     padding: 0.75rem 1rem;
     font-size: 0.95rem;
+    min-height: 44px;
   }
 
   .send-button {
