@@ -14,6 +14,7 @@ import { names, type ChatMessage, type Message } from "../shared";
 import { MessageContent } from "./MessageContent";
 
 const STORAGE_KEY = "chat-username";
+const MESSAGES_STORAGE_KEY_PREFIX = "chat-messages-";
 
 function getStoredName(): string {
   const stored = localStorage.getItem(STORAGE_KEY);
@@ -21,6 +22,26 @@ function getStoredName(): string {
   const randomName = names[Math.floor(Math.random() * names.length)];
   localStorage.setItem(STORAGE_KEY, randomName);
   return randomName;
+}
+
+function getStoredMessages(roomId: string): ChatMessage[] {
+  try {
+    const stored = localStorage.getItem(MESSAGES_STORAGE_KEY_PREFIX + roomId);
+    if (stored) {
+      return JSON.parse(stored) as ChatMessage[];
+    }
+  } catch {
+    // ignore parse errors
+  }
+  return [];
+}
+
+function saveMessages(roomId: string, messages: ChatMessage[]) {
+  try {
+    localStorage.setItem(MESSAGES_STORAGE_KEY_PREFIX + roomId, JSON.stringify(messages));
+  } catch {
+    // ignore storage errors (e.g., quota exceeded)
+  }
 }
 
 // 确认弹窗组件
@@ -96,15 +117,26 @@ function App() {
   const [name, setName] = useState<string>("");
   const [isEditingName, setIsEditingName] = useState(false);
   const [nameInput, setNameInput] = useState("");
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const { room } = useParams();
+
+  // 初始化时从 localStorage 加载缓存消息
+  const [messages, setMessages] = useState<ChatMessage[]>(() => getStoredMessages(room || ""));
   const [showClearConfirm, setShowClearConfirm] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [isConnected, setIsConnected] = useState(false);
-  const { room } = useParams();
 
   useEffect(() => {
     setName(getStoredName());
   }, []);
+
+  // 当消息变化时保存到 localStorage
+  useEffect(() => {
+    if (messages.length > 0) {
+      saveMessages(room || "", messages);
+    } else {
+      localStorage.removeItem(MESSAGES_STORAGE_KEY_PREFIX + room);
+    }
+  }, [messages, room]);
 
   const socket = usePartySocket({
     party: "chat",
@@ -389,6 +421,7 @@ function App() {
         onConfirm={() => {
           socket.send(JSON.stringify({ type: "clear" } as Message));
           setMessages([]);
+          localStorage.removeItem(MESSAGES_STORAGE_KEY_PREFIX + room);
           setShowClearConfirm(false);
         }}
         onCancel={() => setShowClearConfirm(false)}
