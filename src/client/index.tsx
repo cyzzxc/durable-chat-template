@@ -15,6 +15,33 @@ import { MessageContent } from "./MessageContent";
 
 const STORAGE_KEY = "chat-username";
 const MESSAGES_STORAGE_KEY_PREFIX = "chat-messages-";
+const THEME_STORAGE_KEY = "chat-theme";
+
+type Theme = "light" | "dark";
+
+function getStoredTheme(): Theme {
+  if (typeof window === "undefined") return "light";
+  const stored = localStorage.getItem(THEME_STORAGE_KEY) as Theme | null;
+  if (stored === "light" || stored === "dark") return stored;
+  // 默认跟随系统偏好
+  if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
+    return "dark";
+  }
+  return "light";
+}
+
+function setStoredTheme(theme: Theme) {
+  localStorage.setItem(THEME_STORAGE_KEY, theme);
+}
+
+function applyTheme(theme: Theme) {
+  document.documentElement.setAttribute("data-theme", theme);
+  // 更新 meta theme-color
+  const metaThemeColor = document.querySelector('meta[name="theme-color"]');
+  if (metaThemeColor) {
+    metaThemeColor.setAttribute("content", theme === "dark" ? "#0F172A" : "#F8FAFC");
+  }
+}
 
 function getStoredName(): string {
   const stored = localStorage.getItem(STORAGE_KEY);
@@ -42,6 +69,11 @@ function saveMessages(roomId: string, messages: ChatMessage[]) {
   } catch {
     // ignore storage errors (e.g., quota exceeded)
   }
+}
+
+// 获取用户名首字母
+function getInitials(name: string): string {
+  return name.charAt(0).toUpperCase();
 }
 
 // 确认弹窗组件
@@ -90,7 +122,7 @@ function ConfirmModal({
     <div className="modal-overlay" onClick={onCancel}>
       <div className="modal-container" onClick={(e) => e.stopPropagation()}>
         <div className="modal-icon">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <circle cx="12" cy="12" r="10"></circle>
             <line x1="12" y1="8" x2="12" y2="12"></line>
             <line x1="12" y1="16" x2="12.01" y2="16"></line>
@@ -117,6 +149,7 @@ function App() {
   const [name, setName] = useState<string>("");
   const [isEditingName, setIsEditingName] = useState(false);
   const [nameInput, setNameInput] = useState("");
+  const [theme, setTheme] = useState<Theme>(() => getStoredTheme());
   const { room } = useParams();
 
   // 初始化时从 localStorage 加载缓存消息
@@ -138,6 +171,20 @@ function App() {
 
   useEffect(() => {
     setName(getStoredName());
+  }, []);
+
+  // 应用主题
+  useEffect(() => {
+    applyTheme(theme);
+  }, [theme]);
+
+  // 切换主题
+  const toggleTheme = useCallback(() => {
+    setTheme((prev) => {
+      const newTheme = prev === "light" ? "dark" : "light";
+      setStoredTheme(newTheme);
+      return newTheme;
+    });
   }, []);
 
   // 当消息变化时保存到 localStorage
@@ -228,31 +275,12 @@ function App() {
 
   return (
     <div className="chat">
-      {/* Header bar */}
+      {/* Header bar - 极简模式 */}
       <div className="header-bar">
-        <div className="room-info">
-          <span className="room-label">聊天室</span>
-          <span className="room-id" title={room}>{room}</span>
-          <div
-            className={`connection-status ${isConnected ? "connected" : "disconnected"}`}
-            title={isConnected ? "已连接" : "未连接"}
-          >
-            <span className="status-dot"></span>
-          </div>
-          <button
-            type="button"
-            className="clear-btn"
-            onClick={() => setShowClearConfirm(true)}
-            title="清空聊天记录"
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <polyline points="3 6 5 6 21 6"></polyline>
-              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-            </svg>
-          </button>
-        </div>
         <div className="user-info">
-          <span className="user-label">当前用户</span>
+          <div className="user-avatar" onClick={toggleTheme} title={theme === "light" ? "切换到深色模式" : "切换到浅色模式"}>
+            {getInitials(name)}
+          </div>
           {isEditingName ? (
             <div className="name-edit-container">
               <input
@@ -277,7 +305,7 @@ function App() {
                 onClick={handleSaveName}
                 title="保存"
               >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                   <polyline points="20 6 9 17 4 12"></polyline>
                 </svg>
               </button>
@@ -287,7 +315,7 @@ function App() {
                 onClick={handleCancelEdit}
                 title="取消"
               >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                   <line x1="18" y1="6" x2="6" y2="18"></line>
                   <line x1="6" y1="6" x2="18" y2="18"></line>
                 </svg>
@@ -302,65 +330,96 @@ function App() {
                 setIsEditingName(true);
               }}
             >
-              {name}
+              <span>{name}</span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+              </svg>
             </button>
           )}
+        </div>
+        <div className="header-actions">
+          <button
+            type="button"
+            className="header-btn danger"
+            onClick={() => setShowClearConfirm(true)}
+            title="清空聊天记录"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="3 6 5 6 21 6"></polyline>
+              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+            </svg>
+          </button>
         </div>
       </div>
 
       {/* Messages */}
       <div className="messages-container">
-        {messages.map((message) => {
-          const isMyMessage = message.user === name;
-          return (
-            <div
-              key={message.id}
-              className={`message ${isMyMessage ? "my-message" : "other-message"}`}
-            >
-              <div className="message-header">
-                <span className="message-user">{message.user}</span>
-                <button
-                  type="button"
-                  className={`message-copy-btn ${copiedId === message.id ? "copied" : ""}`}
-                  onClick={() => {
-                    navigator.clipboard.writeText(message.content);
-                    setCopiedId(message.id);
-                    setTimeout(() => setCopiedId(null), 1000);
-                  }}
-                  title="复制消息"
-                >
-                  {copiedId === message.id ? (
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                      <polyline points="20 6 9 17 4 12"></polyline>
-                    </svg>
-                  ) : (
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                    </svg>
-                  )}
-                </button>
-                <button
-                  type="button"
-                  className="message-delete-btn"
-                  onClick={() => {
-                    socket.send(JSON.stringify({ type: "delete", id: message.id } as Message));
-                    setMessages((msgs) => msgs.filter((m) => m.id !== message.id));
-                  }}
-                  title="删除消息"
-                >
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <polyline points="3 6 5 6 21 6"></polyline>
-                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                  </svg>
-                </button>
-              </div>
-              <div className="message-content">
-                <MessageContent content={message.content} />
-              </div>
+        {messages.length === 0 ? (
+          <div className="messages-empty">
+            <div className="messages-empty-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+              </svg>
             </div>
-          );
-        })}
+            <h3>开始聊天吧</h3>
+            <p>发送一条消息，开启实时对话</p>
+          </div>
+        ) : (
+          messages.map((message) => {
+            const isMyMessage = message.user === name;
+            return (
+              <div
+                key={message.id}
+                className={`message ${isMyMessage ? "my-message" : "other-message"}`}
+              >
+                <div className="message-header">
+                  <span className="message-user">{message.user}</span>
+                  <div className="message-actions">
+                    <button
+                      type="button"
+                      className={`message-action-btn ${copiedId === message.id ? "copied" : ""}`}
+                      onClick={() => {
+                        navigator.clipboard.writeText(message.content);
+                        setCopiedId(message.id);
+                        setTimeout(() => setCopiedId(null), 1500);
+                      }}
+                      title="复制消息"
+                    >
+                      {copiedId === message.id ? (
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                          <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                      ) : (
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                          <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                        </svg>
+                      )}
+                    </button>
+                    <button
+                      type="button"
+                      className="message-action-btn delete"
+                      onClick={() => {
+                        socket.send(JSON.stringify({ type: "delete", id: message.id } as Message));
+                        setMessages((msgs) => msgs.filter((m) => m.id !== message.id));
+                      }}
+                      title="删除消息"
+                    >
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="3 6 5 6 21 6"></polyline>
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+                <div className="message-content">
+                  <MessageContent content={message.content} />
+                </div>
+              </div>
+            );
+          })
+        )}
         <div ref={messagesEndRef} />
       </div>
 
@@ -417,7 +476,7 @@ function App() {
           />
         </div>
         <button type="submit" className="send-button">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <line x1="22" y1="2" x2="11" y2="13"></line>
             <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
           </svg>
