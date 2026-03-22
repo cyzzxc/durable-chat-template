@@ -644,6 +644,12 @@ body {
   color: var(--text-muted);
 }
 
+.message-time {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  opacity: 0.7;
+}
+
 .message-actions {
   display: flex;
   gap: var(--space-1);

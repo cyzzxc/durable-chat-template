@@ -22,12 +22,12 @@ export class Chat extends Server<Env> {
 
 		// create the messages table if it doesn't exist
 		this.ctx.storage.sql.exec(
-			`CREATE TABLE IF NOT EXISTS messages (id TEXT PRIMARY KEY, user TEXT, role TEXT, content TEXT)`,
+			`CREATE TABLE IF NOT EXISTS messages (id TEXT PRIMARY KEY, user TEXT, role TEXT, content TEXT, timestamp INTEGER)`,
 		);
 
 		// load the messages from the database
 		this.messages = this.ctx.storage.sql
-			.exec(`SELECT * FROM messages`)
+			.exec(`SELECT * FROM messages ORDER BY timestamp ASC`)
 			.toArray() as ChatMessage[];
 	}
 
@@ -61,11 +61,12 @@ export class Chat extends Server<Env> {
 
 		const escapedContent = this.escapeSqlString(message.content);
 		const escapedUser = this.escapeSqlString(message.user);
+		const timestamp = message.timestamp ?? Date.now();
 
 		this.ctx.storage.sql.exec(
-			`INSERT INTO messages (id, user, role, content) VALUES ('${
+			`INSERT INTO messages (id, user, role, content, timestamp) VALUES ('${
 				message.id
-			}', '${escapedUser}', '${message.role}', '${escapedContent}') ON CONFLICT (id) DO UPDATE SET content = '${escapedContent}'`,
+			}', '${escapedUser}', '${message.role}', '${escapedContent}', ${timestamp}) ON CONFLICT (id) DO UPDATE SET content = '${escapedContent}', timestamp = ${timestamp}`,
 		);
 	}
 
@@ -115,13 +116,15 @@ export class Chat extends Server<Env> {
 			try {
 				const payload = (await request.json()) as Omit<
 					ChatMessage,
-					"id"
+					"id" | "timestamp"
 				>;
 
 				// Generate a unique ID for the message
 				const id = crypto.randomUUID();
+				const timestamp = Date.now();
 				const message: ChatMessage = {
 					id,
+					timestamp,
 					...payload,
 				};
 

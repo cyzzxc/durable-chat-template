@@ -71,6 +71,25 @@ function saveMessages(roomId: string, messages: ChatMessage[]) {
   }
 }
 
+// 格式化时间显示
+function formatTime(timestamp: number | undefined): string {
+  if (!timestamp) return "";
+  const date = new Date(timestamp);
+  const now = new Date();
+  const isToday = date.toDateString() === now.toDateString();
+
+  const hours = date.getHours().toString().padStart(2, "0");
+  const minutes = date.getMinutes().toString().padStart(2, "0");
+
+  if (isToday) {
+    return `${hours}:${minutes}`;
+  } else {
+    const month = (date.getMonth() + 1).toString().padStart(2, "0");
+    const day = date.getDate().toString().padStart(2, "0");
+    return `${month}/${day} ${hours}:${minutes}`;
+  }
+}
+
 // 获取用户名首字母
 function getInitials(name: string): string {
   return name.charAt(0).toUpperCase();
@@ -218,6 +237,7 @@ function App() {
               content: message.content,
               user: message.user,
               role: message.role,
+              timestamp: message.timestamp,
             },
           ]);
         } else {
@@ -232,6 +252,7 @@ function App() {
                 content: message.content,
                 user: message.user,
                 role: message.role,
+                timestamp: message.timestamp,
               })
               .concat(messages.slice(foundIndex + 1));
           });
@@ -245,6 +266,7 @@ function App() {
                   content: message.content,
                   user: message.user,
                   role: message.role,
+                  timestamp: message.timestamp,
                 }
               : m,
           ),
@@ -372,9 +394,11 @@ function App() {
               <div
                 key={message.id}
                 className={`message ${isMyMessage ? "my-message" : "other-message"}`}
+                title={formatTime(message.timestamp)}
               >
                 <div className="message-header">
                   <span className="message-user">{message.user}</span>
+                  <span className="message-time">{formatTime(message.timestamp)}</span>
                   <div className="message-actions">
                     <button
                       type="button"
@@ -434,11 +458,13 @@ function App() {
           ) as HTMLTextAreaElement;
           const text = content.value.trim();
           if (!text) return;
+          const timestamp = Date.now();
           const chatMessage: ChatMessage = {
             id: nanoid(8),
             content: text,
             user: name,
             role: "user",
+            timestamp,
           };
           setMessages((messages) => [...messages, chatMessage]);
 
