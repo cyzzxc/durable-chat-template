@@ -25,6 +25,19 @@ export class Chat extends Server<Env> {
 			`CREATE TABLE IF NOT EXISTS messages (id TEXT PRIMARY KEY, user TEXT, role TEXT, content TEXT, timestamp INTEGER)`,
 		);
 
+		// 迁移：如果旧表没有 timestamp 列，添加它
+		const tableInfo = this.ctx.storage.sql
+			.exec(`PRAGMA table_info(messages)`)
+			.toArray();
+		const hasTimestamp = tableInfo.some(
+			(col) => (col as { name: string }).name === "timestamp",
+		);
+		if (!hasTimestamp) {
+			this.ctx.storage.sql.exec(
+				`ALTER TABLE messages ADD COLUMN timestamp INTEGER DEFAULT 0`,
+			);
+		}
+
 		// load the messages from the database
 		this.messages = this.ctx.storage.sql
 			.exec(`SELECT * FROM messages ORDER BY timestamp ASC`)
